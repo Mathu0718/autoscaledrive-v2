@@ -7,13 +7,13 @@ from datetime import datetime
 app = Flask(__name__)
 CORS(app)
 
-# Initialize DynamoDB resource and table
 dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
 table = dynamodb.Table('AutoScaleDriveResults')
 
 @app.route('/decide-mode', methods=['POST'])
 def decide_mode():
     data = request.get_json()
+    print(f"Received data: {data}")
 
     temp = data.get('engine_temp')
     sound = data.get('engine_sound')
@@ -23,6 +23,9 @@ def decide_mode():
 
     reason = ""
     mode = "Normal"
+
+    if temp is None or sound is None or tyre is None or fuel is None or climate is None:
+        return jsonify({"error": "Missing required inputs"}), 400
 
     if temp > 120:
         mode = "Safety"
@@ -43,7 +46,6 @@ def decide_mode():
         mode = "Normal"
         reason = "Conditions stable. Default Normal mode applied."
 
-    # Prepare item for DynamoDB
     item = {
         'id': str(uuid.uuid4()),
         'timestamp': datetime.utcnow().isoformat(),
@@ -52,8 +54,11 @@ def decide_mode():
         'reason': reason
     }
 
-    # Save to DynamoDB
-    table.put_item(Item=item)
+    try:
+        table.put_item(Item=item)
+        print("Saved to DynamoDB successfully")
+    except Exception as e:
+        print(f"Error saving to DynamoDB: {e}")
 
     return jsonify({
         "mode": mode,
