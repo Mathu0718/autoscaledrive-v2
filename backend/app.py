@@ -4,7 +4,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return "API is running! Use POST /decide-mode to interact."
+    return "AutoScaleDrive Backend is up and running!"
 
 @app.route('/decide-mode', methods=['POST'])
 def decide_mode():
