@@ -10,11 +10,7 @@ pipeline {
 
     stage('Build Docker Image') {
       steps {
-        dir('backend') {
-          script {
-            docker.build('autoscaledrive-backend')
-          }
-        }
+        sh 'docker build -t autoscaledrive-backend backend/'
       }
     }
 
