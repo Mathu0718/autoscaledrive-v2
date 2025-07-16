@@ -4,7 +4,7 @@ pipeline {
   stages {
     stage('Clone') {
       steps {
-        git 'https://github.com/Mathu0718/autoscaledrive-v2.git'
+        git branch: 'main', url: 'https://github.com/Mathu0718/autoscaledrive-v2.git'
       }
     }
 
