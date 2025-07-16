@@ -1,0 +1,25 @@
+java -jar jenkins.war
+http://localhost:8080
+
+
+http://localhost:5000
+
+
+
+
+http://localhost:5000/decide-mode
+
+
+
+{
+  "engine_temp": 125,
+  "engine_sound": 70,
+  "tyre_pressure": 28,
+  "fuel_level": 40
+}
+
+
+
+
+
+
