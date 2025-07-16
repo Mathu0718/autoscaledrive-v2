@@ -7,8 +7,8 @@ WORKDIR /app
 # Copy files
 COPY . .
 
-# Install Flask
-RUN pip install flask
+# ✅ Install Flask and flask_cors
+RUN pip install flask flask_cors
 
 # Expose port
 EXPOSE 5000
