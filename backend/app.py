@@ -2,6 +2,10 @@ from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
+@app.route('/')
+def home():
+    return "API is running! Use POST /decide-mode to interact."
+
 @app.route('/decide-mode', methods=['POST'])
 def decide_mode():
     data = request.get_json()
