@@ -1,16 +1,20 @@
 from flask import Flask, request, jsonify
-from flask_cors import CORS  # ✅ Add this line
+from flask_cors import CORS
+import boto3
+import uuid
+from datetime import datetime
 
 app = Flask(__name__)
-CORS(app)  # ✅ Allow CORS for all routes
+CORS(app)
 
-@app.route('/')
-def home():
-    return "Welcome to AutoScaleDrive Backend! Use POST /decide-mode to get the mode."
+# Initialize DynamoDB resource and table
+dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
+table = dynamodb.Table('AutoScaleDriveResults')
 
 @app.route('/decide-mode', methods=['POST'])
 def decide_mode():
     data = request.get_json()
+
     temp = data.get('engine_temp')
     sound = data.get('engine_sound')
     tyre = data.get('tyre_pressure')
@@ -38,6 +42,18 @@ def decide_mode():
     else:
         mode = "Normal"
         reason = "Conditions stable. Default Normal mode applied."
+
+    # Prepare item for DynamoDB
+    item = {
+        'id': str(uuid.uuid4()),
+        'timestamp': datetime.utcnow().isoformat(),
+        'inputs': data,
+        'mode': mode,
+        'reason': reason
+    }
+
+    # Save to DynamoDB
+    table.put_item(Item=item)
 
     return jsonify({
         "mode": mode,

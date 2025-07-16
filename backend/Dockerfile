@@ -4,11 +4,11 @@ FROM python:3.10-slim
 # Set workdir
 WORKDIR /app
 
-# Copy files
+# Copy project files
 COPY . .
 
-# ✅ Install Flask and flask_cors
-RUN pip install flask flask_cors
+# Install dependencies
+RUN pip install flask flask-cors boto3
 
 # Expose port
 EXPOSE 5000
