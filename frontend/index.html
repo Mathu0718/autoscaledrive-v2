@@ -1,41 +1,179 @@
 <!DOCTYPE html>
-<html>
-<head><title>AutoScaleDrive v2</title></head>
-<body>
-  <h2>Smart Driving Mode Simulator</h2>
-  <form id="inputForm">
-    <label>Engine Temp:</label><input type="number" name="engine_temp"><br>
-    <label>Engine Sound (dB):</label><input type="number" name="engine_sound"><br>
-    <label>Tyre Pressure (PSI):</label><input type="number" name="tyre_pressure"><br>
-    <label>Fuel Level (%):</label><input type="number" name="fuel_level"><br>
-    <label>Climate:</label>
-    <select name="climate">
-      <option value="sun">Sunny</option>
-      <option value="rain">Rainy</option>
-    </select><br>
-    <button type="submit">Submit</button>
-  </form>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BMW Style Auto Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Orbitron', sans-serif;
+    }
 
-  <div id="output"></div>
+    body {
+      background: radial-gradient(circle, #0c0f1a 0%, #05060a 100%);
+      color: #fff;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      text-align: center;
+      padding: 1rem;
+      font-size: 2rem;
+      color: #00b4ff;
+      letter-spacing: 2px;
+    }
+
+    main {
+      flex: 1;
+      display: flex;
+    }
+
+    .console {
+      width: 75%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-right: 2px solid #00b4ff33;
+      padding: 2rem;
+      position: relative;
+    }
+
+    .speedometer {
+      width: 90%;
+      height: 80%;
+      background: #111926;
+      border-radius: 1rem;
+      box-shadow: 0 0 30px #00b4ff44;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 2rem;
+    }
+
+    .mode-display {
+      font-size: 3rem;
+      color: #00ffcc;
+      margin-bottom: 1rem;
+    }
+
+    .reason-display {
+      font-size: 1.2rem;
+      color: #ddd;
+      max-width: 500px;
+    }
+
+    .input-panel {
+      width: 25%;
+      padding: 2rem;
+      background: #0e121c;
+    }
+
+    .input-panel h3 {
+      margin-bottom: 1rem;
+      color: #00b4ff;
+    }
+
+    .input-panel input,
+    .input-panel select {
+      width: 100%;
+      padding: 0.5rem;
+      margin-bottom: 1rem;
+      background: #1a1f2e;
+      color: white;
+      border: 1px solid #00b4ff55;
+      border-radius: 5px;
+    }
+
+    button {
+      width: 100%;
+      padding: 0.8rem;
+      border: none;
+      background: #00b4ff;
+      color: #000;
+      font-weight: bold;
+      font-size: 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #00e1ff;
+    }
+  </style>
+</head>
+<body>
+  <header>🚗 AutoScale Drive – Smart Mode Selector</header>
+  <main>
+    <div class="console">
+      <div class="speedometer">
+        <div class="mode-display" id="modeOutput">--</div>
+        <div class="reason-display" id="reasonOutput">Enter values to decide mode</div>
+      </div>
+    </div>
+
+    <div class="input-panel">
+      <h3>Enter Inputs</h3>
+      <input type="number" id="engine_temp" placeholder="Engine Temperature (°C)" />
+      <input type="number" id="engine_sound" placeholder="Engine Sound (dB)" />
+      <input type="number" id="tyre_pressure" placeholder="Tyre Pressure (PSI)" />
+      <input type="number" id="fuel_level" placeholder="Fuel Level (%)" />
+      <select id="climate">
+        <option value="sun">Sun</option>
+        <option value="rain">Rain</option>
+        <option value="snow">Snow</option>
+      </select>
+      <button onclick="submitData()">🚀 Submit</button>
+    </div>
+  </main>
 
   <script>
-    document.getElementById('inputForm').onsubmit = async function (e) {
-      e.preventDefault();
-      const data = Object.fromEntries(new FormData(e.target).entries());
-      for (let key in data) {
-        data[key] = isNaN(data[key]) ? data[key] : parseFloat(data[key]);
-      }
+  async function submitData() {
+    const payload = {
+      engine_temp: parseInt(document.getElementById('engine_temp').value),
+      engine_sound: parseInt(document.getElementById('engine_sound').value),
+      tyre_pressure: parseInt(document.getElementById('tyre_pressure').value),
+      fuel_level: parseInt(document.getElementById('fuel_level').value),
+      climate: document.getElementById('climate').value,
+    };
 
+    try {
       const res = await fetch('http://localhost:5000/decide-mode', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
       });
 
-      const result = await res.json();
-      document.getElementById('output').innerHTML =
-        `<h3>Mode: ${result.mode}</h3><p>Reason: ${result.reason}</p>`;
-    };
-  </script>
+      if (!res.ok) {
+        throw new Error(`Server responded with ${res.status}`);
+      }
+
+      const data = await res.json();
+
+      if (data.mode && data.reason) {
+        document.getElementById('modeOutput').textContent = data.mode + ' MODE';
+        document.getElementById('reasonOutput').textContent = data.reason;
+      } else {
+        document.getElementById('modeOutput').textContent = '--';
+        document.getElementById('reasonOutput').textContent = 'Invalid response from server.';
+      }
+
+    } catch (error) {
+      document.getElementById('modeOutput').textContent = 'ERROR';
+      document.getElementById('reasonOutput').textContent = 'Failed to connect to backend. Is the API running?';
+      console.error("API error:", error);
+    }
+  }
+</script>
+
 </body>
 </html>
