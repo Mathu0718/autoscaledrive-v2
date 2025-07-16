@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head><title>AutoScaleDrive v2</title></head>
+<body>
+  <h2>Smart Driving Mode Simulator</h2>
+  <form id="inputForm">
+    <label>Engine Temp:</label><input type="number" name="engine_temp"><br>
+    <label>Engine Sound (dB):</label><input type="number" name="engine_sound"><br>
+    <label>Tyre Pressure (PSI):</label><input type="number" name="tyre_pressure"><br>
+    <label>Fuel Level (%):</label><input type="number" name="fuel_level"><br>
+    <label>Climate:</label>
+    <select name="climate">
+      <option value="sun">Sunny</option>
+      <option value="rain">Rainy</option>
+    </select><br>
+    <button type="submit">Submit</button>
+  </form>
+
+  <div id="output"></div>
+
+  <script>
+    document.getElementById('inputForm').onsubmit = async function (e) {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(e.target).entries());
+      for (let key in data) {
+        data[key] = isNaN(data[key]) ? data[key] : parseFloat(data[key]);
+      }
+
+      const res = await fetch('http://localhost:5000/decide-mode', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      const result = await res.json();
+      document.getElementById('output').innerHTML =
+        `<h3>Mode: ${result.mode}</h3><p>Reason: ${result.reason}</p>`;
+    };
+  </script>
+</body>
+</html>
