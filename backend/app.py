@@ -10,7 +10,7 @@ CORS(app)
 # Default root route
 @app.route('/')
 def home():
-    return "🚗 AutoScaleDrive Flask API is running!"
+    return "AutoScaleDrive Flask API is running!"
 
 dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
 table = dynamodb.Table('AutoScaleDriveResults')
