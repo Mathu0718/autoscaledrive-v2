@@ -40,34 +40,45 @@
       align-items: center;
       justify-content: center;
       border-right: 2px solid #00b4ff33;
-      padding: 2rem;
       position: relative;
+      background: #000;
     }
 
-    .speedometer {
+    .bmw-display {
+      position: relative;
       width: 90%;
-      height: 80%;
-      background: #111926;
-      border-radius: 1rem;
-      box-shadow: 0 0 30px #00b4ff44;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      max-width: 900px;
+    }
+
+    .dashboard-img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 10px;
+      box-shadow: 0 0 40px #00b4ff33;
+    }
+
+    .overlay-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 80%;
+      transform: translate(-50%, -50%);
       text-align: center;
-      padding: 2rem;
+      color: #00b4ff;
     }
 
-    .mode-display {
+    .overlay-text #modeOutput {
       font-size: 3rem;
-      color: #00ffcc;
-      margin-bottom: 1rem;
+      font-weight: bold;
+      text-shadow: 0 0 10px #00b4ff;
     }
 
-    .reason-display {
+    .overlay-text #reasonOutput {
       font-size: 1.2rem;
-      color: #ddd;
-      max-width: 500px;
+      margin-top: 1rem;
+      color: #ffae42;
+      text-shadow: 0 0 5px #ffae42;
     }
 
     .input-panel {
@@ -113,9 +124,12 @@
   <header>AutoScale Drive – Smart Mode Selector</header>
   <main>
     <div class="console">
-      <div class="speedometer">
-        <div class="mode-display" id="modeOutput">--</div>
-        <div class="reason-display" id="reasonOutput">Enter values to decide mode</div>
+      <div class="bmw-display">
+        <img src="bmw.jpg" alt="BMW Console" class="dashboard-img" />
+        <div class="overlay-text">
+          <div id="modeOutput">--</div>
+          <div id="reasonOutput">Enter values to decide mode</div>
+        </div>
       </div>
     </div>
 
@@ -135,45 +149,44 @@
   </main>
 
   <script>
-  async function submitData() {
-    const payload = {
-      engine_temp: parseInt(document.getElementById('engine_temp').value),
-      engine_sound: parseInt(document.getElementById('engine_sound').value),
-      tyre_pressure: parseInt(document.getElementById('tyre_pressure').value),
-      fuel_level: parseInt(document.getElementById('fuel_level').value),
-      climate: document.getElementById('climate').value,
-    };
+    async function submitData() {
+      const payload = {
+        engine_temp: parseInt(document.getElementById('engine_temp').value),
+        engine_sound: parseInt(document.getElementById('engine_sound').value),
+        tyre_pressure: parseInt(document.getElementById('tyre_pressure').value),
+        fuel_level: parseInt(document.getElementById('fuel_level').value),
+        climate: document.getElementById('climate').value,
+      };
 
-    try {
-      const res = await fetch('http://52.91.14.245:5000/decide-mode', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
+      try {
+        const res = await fetch('http://52.91.14.245:5000/decide-mode', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        });
 
-      if (!res.ok) {
-        throw new Error(`Server responded with ${res.status}`);
+        if (!res.ok) {
+          throw new Error(`Server responded with ${res.status}`);
+        }
+
+        const data = await res.json();
+
+        if (data.mode && data.reason) {
+          document.getElementById('modeOutput').textContent = data.mode + ' MODE';
+          document.getElementById('reasonOutput').textContent = data.reason;
+        } else {
+          document.getElementById('modeOutput').textContent = '--';
+          document.getElementById('reasonOutput').textContent = 'Invalid response from server.';
+        }
+
+      } catch (error) {
+        document.getElementById('modeOutput').textContent = 'ERROR';
+        document.getElementById('reasonOutput').textContent = 'Failed to connect to backend. Is the API running?';
+        console.error("API error:", error);
       }
-
-      const data = await res.json();
-
-      if (data.mode && data.reason) {
-        document.getElementById('modeOutput').textContent = data.mode + ' MODE';
-        document.getElementById('reasonOutput').textContent = data.reason;
-      } else {
-        document.getElementById('modeOutput').textContent = '--';
-        document.getElementById('reasonOutput').textContent = 'Invalid response from server.';
-      }
-
-    } catch (error) {
-      document.getElementById('modeOutput').textContent = 'ERROR';
-      document.getElementById('reasonOutput').textContent = 'Failed to connect to backend. Is the API running?';
-      console.error("API error:", error);
     }
-  }
-</script>
-
+  </script>
 </body>
 </html>
